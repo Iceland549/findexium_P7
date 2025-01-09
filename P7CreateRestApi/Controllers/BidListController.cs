@@ -1,40 +1,86 @@
 using Dot.Net.WebApi.Domain;
 using Microsoft.AspNetCore.Mvc;
+using P7CreateRestApi.Repositories;
 
 namespace Dot.Net.WebApi.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class BidListController : ControllerBase
     {
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody] BidList bidList)
+        private readonly BidListRepository _repository;
+        public BidListController(BidListRepository repository)
         {
-            // TODO: check data valid and save to db, after saving return bid list
-            return Ok();
+            _repository = repository;
         }
 
         [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
+        public async Task<ActionResult<IEnumerable<BidList>>> GetAllAsync()
         {
-            return Ok();
+            // TODO: check data valid and save to db, after saving return bid list
+            var bidList = await _repository.GetAllAsync();
+            return Ok(bidList);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BidList>> GetByIdAsync(int id)
+        {
+            var bidList = await _repository.GetByIdAsync(id);
+            if (bidList == null)
+            {
+                return NotFound();
+            }
+            return bidList;
         }
 
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateBid(int id, [FromBody] BidList bidList)
+        public async Task<ActionResult<BidList>> CreateAsync([FromBody]BidList bidList) 
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _repository.AddAsync(bidList);
             // TODO: check required fields, if valid call service to update Bid and return list Bid
-            return Ok();
+            return CreatedAtAction(nameof(GetByIdAsync), new { id = bidList.BidListId }, bidList);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteBid(int id)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateAsync(int id, BidList bidList)
         {
-            return Ok();
+            if (id != bidList.BidListId)
+            {
+                return BadRequest();
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _repository.UpdateAsync(bidList);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            try
+            {
+                await _repository.DeleteAsync(id);
+            }
+            catch
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }
