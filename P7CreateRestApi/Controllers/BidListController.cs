@@ -11,7 +11,7 @@ namespace Dot.Net.WebApi.Controllers
         private readonly BidListRepository _repository;
         public BidListController(BidListRepository repository)
         {
-            _repository = repository;
+            _repository = repository; 
         }
 
         [HttpGet]
