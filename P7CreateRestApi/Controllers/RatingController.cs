@@ -1,59 +1,85 @@
-using Dot.Net.WebApi.Controllers.Domain;
+using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
+using P7CreateRestApi.Repositories;
 
-namespace Dot.Net.WebApi.Controllers
+namespace P7CreateRestApi.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class RatingController : ControllerBase
     {
-        // TODO: Inject Rating service
+        private readonly RatingRepository _repository;
 
-        [HttpGet]
-        [Route("list")]
-        public IActionResult Home()
+        public RatingController(RatingRepository repository)
         {
-            // TODO: find all Rating, add to model
-            return Ok();
+            _repository = repository;
         }
 
         [HttpGet]
-        [Route("add")]
-        public IActionResult AddRatingForm([FromBody]Rating rating)
+        public async Task<ActionResult<IEnumerable<Rating>>> GetAllAsync()
         {
-            return Ok();
+            var ratings = await _repository.GetAllAsync();
+            return Ok(ratings);
         }
 
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody]Rating rating)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Rating>> GetByIdAsync(int id)
         {
-            // TODO: check data valid and save to db, after saving return Rating list
-            return Ok();
-        }
-
-        [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
-        {
-            // TODO: get Rating by Id and to model then show to the form
-            return Ok();
+            var rating = await _repository.GetByIdAsync(id);
+            if (rating == null)
+            {
+                return NotFound();
+            }
+            return rating;
         }
 
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateRating(int id, [FromBody] Rating rating)
+        public async Task<ActionResult<Rating>> CreateAsync([FromBody] Rating rating)
         {
-            // TODO: check required fields, if valid call service to update Rating and return Rating list
-            return Ok();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _repository.AddAsync(rating);
+            return CreatedAtAction(nameof(GetByIdAsync), new { id = rating.Id }, rating);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteRating(int id)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateAsync(int id, Rating rating)
         {
-            // TODO: Find Rating by Id and delete the Rating, return to Rating list
-            return Ok();
+            if (id != rating.Id)
+            {
+                return BadRequest();
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _repository.UpdateAsync(rating);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            try
+            {
+                await _repository.DeleteAsync(id);
+            }
+            catch
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }
