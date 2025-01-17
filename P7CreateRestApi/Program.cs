@@ -1,4 +1,4 @@
-using Dot.Net.WebApi.Data;
+using P7CreateRestApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using P7CreateRestApi.Repositories;
@@ -17,6 +17,11 @@ builder.Services.AddDbContext<LocalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<BidListRepository>();
+builder.Services.AddScoped<CurvePointRepository>();
+builder.Services.AddScoped<RatingRepository>();
+builder.Services.AddScoped<RuleNameRepository>();
+builder.Services.AddScoped<TradeRepository>();
+builder.Services.AddScoped<UserRepository>();
 
 var app = builder.Build();
 
