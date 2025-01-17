@@ -1,37 +1,56 @@
-using Dot.Net.WebApi.Data;
-using Dot.Net.WebApi.Domain;
+using P7CreateRestApi.Data;
+using P7CreateRestApi.Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Dot.Net.WebApi.Repositories
+namespace P7CreateRestApi.Repositories
 {
     public class UserRepository
     {
-        public LocalDbContext DbContext { get; }
+        private readonly LocalDbContext _context;
 
-        public UserRepository(LocalDbContext dbContext)
+        public UserRepository(LocalDbContext context)
         {
-            DbContext = dbContext;
+            _context = context;
         }
 
-        public User FindByUserName(string userName)
+        public async Task<IEnumerable<User>> GetAllAsync()
         {
-            return DbContext.Users.Where(user => user.UserName == userName)
-                                  .FirstOrDefault();
+            return await _context.Users.ToListAsync();
         }
 
-        public async Task<List<User>> FindAll()
+        public async Task<User> GetByIdAsync(int id)
         {
-            return await DbContext.Users.ToListAsync();
+            return await _context.Users.FindAsync(id);
         }
 
-        public void Add(User user)
+        public async Task AddAsync(User user)
         {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
         }
 
-        public User FindById(int id)
+        public async Task UpdateAsync(User user)
         {
-            return null;
+            var existingUser = await _context.Users.FindAsync(user.Id);
+            if (existingUser == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+            _context.Entry(existingUser).CurrentValues.SetValues(user);
+            await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }

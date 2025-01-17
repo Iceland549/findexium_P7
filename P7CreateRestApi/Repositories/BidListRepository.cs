@@ -1,5 +1,5 @@
-﻿using Dot.Net.WebApi.Data;
-using Dot.Net.WebApi.Domain;
+﻿using P7CreateRestApi.Data;
+using P7CreateRestApi.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 //using P7CreateRestApi.Data;
@@ -21,7 +21,7 @@ namespace P7CreateRestApi.Repositories
         {
             return await _context.BidLists.ToListAsync();
         }
-        public async Task<BidList> GetByIdAsync(int id)
+        public async Task<BidList?> GetByIdAsync(int id)
         {
             return await _context.BidLists.FindAsync(id);
         }
@@ -33,7 +33,7 @@ namespace P7CreateRestApi.Repositories
         public async Task UpdateAsync(BidList bidList)
         {
             var existingBidList = await _context.BidLists.FindAsync(bidList.BidListId);
-            if (existingBidList != null)
+            if (existingBidList == null)
             {
                 throw new KeyNotFoundException("Bidlist not found");
             }
@@ -43,7 +43,7 @@ namespace P7CreateRestApi.Repositories
         public async Task DeleteAsync(int id)
         {
             var bidList = await _context.BidLists.FindAsync(id);
-            if (bidList != null)
+            if (bidList == null)
             {
                 throw new KeyNotFoundException("BidList not found");
             }
