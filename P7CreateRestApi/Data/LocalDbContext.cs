@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Domain;
 using P7CreateRestApi.Controllers;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace P7CreateRestApi.Data
 {
