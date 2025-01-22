@@ -1,4 +1,9 @@
-﻿namespace P7CreateRestApi.Data
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+
+namespace P7CreateRestApi.Data
 {
     public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
