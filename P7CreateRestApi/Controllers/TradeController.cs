@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using P7CreateRestApi.Dtos;
+
 
 namespace P7CreateRestApi.Controllers
 {
@@ -48,9 +50,9 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] Trade trade)
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] TradeDto tradeDto)
         {
-            if (id != trade.TradeId)
+            if (id != tradeDto.TradeId)
             {
                 return BadRequest();
             }
@@ -62,7 +64,28 @@ namespace P7CreateRestApi.Controllers
 
             try
             {
-                await _repository.UpdateAsync(trade);
+                var originalTrade = await _repository.GetByIdAsync(id);
+                if (originalTrade == null)
+                {
+                    return NotFound();
+                }
+                originalTrade.Account = tradeDto.Account;
+                originalTrade.AccountType = tradeDto.AccountType;
+                originalTrade.BuyQuantity = tradeDto.BuyQuantity;
+                originalTrade.SellQuantity = tradeDto.SellQuantity;
+                originalTrade.BuyPrice = tradeDto.BuyPrice;
+                originalTrade.SellPrice = tradeDto.SellPrice;
+                originalTrade.TradeSecurity = tradeDto.TradeSecurity;
+                originalTrade.TradeStatus = tradeDto.TradeStatus;
+                originalTrade.Trader = tradeDto.Trader;
+                originalTrade.Benchmark = tradeDto.Benchmark;
+                originalTrade.Book  = tradeDto.Book;
+                originalTrade.DealName = tradeDto.DealName;
+                originalTrade.DealType = tradeDto.DealType;
+                originalTrade.SourceListId = tradeDto.SourceListId;
+                originalTrade.Side = tradeDto.Side;
+
+                await _repository.UpdateAsync(originalTrade);
             }
             catch (KeyNotFoundException)
             {

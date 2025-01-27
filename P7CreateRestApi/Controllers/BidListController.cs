@@ -1,6 +1,8 @@
 using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
+using P7CreateRestApi.Dtos;
+
 
 namespace P7CreateRestApi.Controllers
 {
@@ -47,9 +49,9 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, BidList bidList)
+        public async Task<ActionResult> UpdateAsync(int id, BidListDto bidListDto)
         {
-            if (id != bidList.BidListId)
+            if (id != bidListDto.BidListId)
             {
                 return BadRequest();
             }
@@ -60,7 +62,29 @@ namespace P7CreateRestApi.Controllers
 
             try
             {
-                await _repository.UpdateAsync(bidList);
+                var originalBidList = await _repository.GetByIdAsync(id);
+                if (originalBidList == null)
+                {
+                    return NotFound();
+                }
+                originalBidList.Account = bidListDto.Account;
+                originalBidList.BidType = bidListDto.BidType;
+                originalBidList.BidQuantity = bidListDto.BidQuantity;
+                originalBidList.AskQuantity = bidListDto.AskQuantity;
+                originalBidList.Bid = bidListDto.Bid;
+                originalBidList.Ask = bidListDto.Ask;
+                originalBidList.Benchmark = bidListDto.Benchmark;
+                originalBidList.Commentary = bidListDto.Commentary;
+                originalBidList.BidSecurity = bidListDto.BidSecurity;
+                originalBidList.BidStatus = bidListDto.BidStatus;
+                originalBidList.Trader = bidListDto.Trader;
+                originalBidList.Book = bidListDto.Book;
+                originalBidList.DealName = bidListDto.DealName;
+                originalBidList.DealType = bidListDto.DealType;
+                originalBidList.SourceListId = bidListDto.SourceListId;
+                originalBidList.Side = bidListDto.Side;
+
+                await _repository.UpdateAsync(originalBidList);
             }
             catch (KeyNotFoundException)
             {

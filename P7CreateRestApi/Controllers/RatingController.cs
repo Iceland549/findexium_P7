@@ -1,6 +1,8 @@
 using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
+using P7CreateRestApi.Dtos;
+
 
 namespace P7CreateRestApi.Controllers
 {
@@ -46,9 +48,9 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, Rating rating)
+        public async Task<ActionResult> UpdateAsync(int id, RatingDto ratingDto)
         {
-            if (id != rating.Id)
+            if (id != ratingDto.Id)
             {
                 return BadRequest();
             }
@@ -59,7 +61,17 @@ namespace P7CreateRestApi.Controllers
 
             try
             {
-                await _repository.UpdateAsync(rating);
+                var originalRating = await _repository.GetByIdAsync(id);
+                if (originalRating == null)
+                {
+                    return NotFound();
+                }
+                originalRating.MoodyRating = ratingDto.MoodysRating;
+                originalRating.SandPRating = ratingDto.SandPRating;
+                originalRating.FitchRating = ratingDto.FitchRating;
+                originalRating.OrderNumber = ratingDto.OrderNumber;
+
+                await _repository.UpdateAsync(originalRating);
             }
             catch (KeyNotFoundException)
             {

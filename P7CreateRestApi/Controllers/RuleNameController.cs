@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using P7CreateRestApi.Dtos;
+
 
 namespace P7CreateRestApi.Controllers
 {
@@ -48,9 +50,9 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] RuleName ruleName)
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] RuleNameDto ruleNameDto)
         {
-            if (id != ruleName.Id)
+            if (id != ruleNameDto.Id)
             {
                 return BadRequest();
             }
@@ -62,7 +64,19 @@ namespace P7CreateRestApi.Controllers
 
             try
             {
-                await _repository.UpdateAsync(ruleName);
+                var originalRuleName = await _repository.GetByIdAsync(id);
+                if (originalRuleName == null)
+                {
+                    return NotFound();
+                }
+                originalRuleName.Name = ruleNameDto.Name;
+                originalRuleName.Description = ruleNameDto.Description;
+                originalRuleName.Json = ruleNameDto.Json;
+                originalRuleName.Template = ruleNameDto.Template;
+                originalRuleName.SqlStr = ruleNameDto.SqlStr;
+                originalRuleName.SqlPart = ruleNameDto.SqlPart;
+
+                await _repository.UpdateAsync(originalRuleName);
             }
             catch (KeyNotFoundException)
             {

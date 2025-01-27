@@ -1,62 +1,58 @@
 using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using P7CreateRestApi.Dtos;
-
 
 namespace P7CreateRestApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class CurvePointController : ControllerBase
     {
-        private readonly UserRepository _repository;
+        private readonly CurvePointRepository _repository;
 
-        public UserController(UserRepository repository)
+        public CurvePointController(CurvePointRepository repository)
         {
             _repository = repository;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<CurvePoint>>> GetAllAsync()
         {
-            var users = await _repository.GetAllAsync();
-            return Ok(users);
+            var curvePoints = await _repository.GetAllAsync();
+            return Ok(curvePoints);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetByIdAsync(int id)
+        public async Task<ActionResult<CurvePoint>> GetByIdAsync(int id)
         {
-            var user = await _repository.GetByIdAsync(id);
-            if (user == null)
+            var curvePoint = await _repository.GetByIdAsync(id);
+            if (curvePoint == null)
             {
                 return NotFound();
             }
-            return user;
+            return curvePoint;
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> CreateAsync([FromBody] User user)
+        public async Task<ActionResult<CurvePoint>> CreateAsync([FromBody] CurvePoint curvePoint)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            await _repository.AddAsync(user);
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = user.Id }, user);
+            await _repository.AddAsync(curvePoint);
+            return CreatedAtAction(nameof(GetByIdAsync), new { id = curvePoint.Id }, curvePoint);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] UserDto userDto)
+        public async Task<ActionResult> UpdateAsync(int id, CurvePointDto curvePointDto)
         {
-            if (id != userDto.Id)
+            if (id != curvePointDto.Id)
             {
                 return BadRequest();
             }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -64,16 +60,16 @@ namespace P7CreateRestApi.Controllers
 
             try
             {
-                var originalUser = await _repository.GetByIdAsync(id);
-                if (originalUser == null)
+                var originalCurvePoint = await _repository.GetByIdAsync(id);
+                if (originalCurvePoint == null)
                 {
                     return NotFound();
                 }
-                originalUser.UserName = userDto.Username;
-                originalUser.FullName = userDto.Fullname;
-                originalUser.Role = userDto.Role;
+                originalCurvePoint.CurveId = curvePointDto.CurveId;
+                originalCurvePoint.Term = curvePointDto.Term;
+                originalCurvePoint.CurvePointValue = curvePointDto.CurvePointValue;
 
-                await _repository.UpdateAsync(originalUser);
+                await _repository.UpdateAsync(originalCurvePoint);
             }
             catch (KeyNotFoundException)
             {
