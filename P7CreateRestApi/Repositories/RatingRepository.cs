@@ -21,7 +21,7 @@ namespace P7CreateRestApi.Repositories
             return await _context.Ratings.ToListAsync();
         }
 
-        public async Task<Rating> GetByIdAsync(int id)
+        public async Task<Rating?> GetByIdAsync(int id)
         {
             return await _context.Ratings.FindAsync(id);
         }

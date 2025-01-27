@@ -22,7 +22,7 @@ namespace P7CreateRestApi.Repositories
             return await _context.RuleNames.ToListAsync();
         }
 
-        public async Task<RuleName> GetByIdAsync(int id)
+        public async Task<RuleName?> GetByIdAsync(int id)
         {
             return await _context.RuleNames.FindAsync(id);
         }

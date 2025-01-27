@@ -21,7 +21,7 @@ namespace P7CreateRestApi.Repositories
             return await _context.Trades.ToListAsync();
         }
 
-        public async Task<Trade> GetByIdAsync(int id)
+        public async Task<Trade?> GetByIdAsync(int id)
         {
             return await _context.Trades.FindAsync(id);
         }
