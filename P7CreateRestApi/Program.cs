@@ -6,12 +6,23 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using P7CreateRestApi.Domain;
 
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
 // Add services to the container.
+
+builder.Logging.ClearProviders(); // Supprime les providers par défaut pour éviter les doublons
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging")); // Charge la configuration depuis appsettings.json
+builder.Logging.AddConsole(); // Ajoute un provider pour afficher les logs dans la console
+builder.Logging.AddDebug(); // Ajoute un provider pour le débogage
+builder.Logging.AddEventSourceLogger(); // Ajoute un provider pour EventSource (utile pour les diagnostics avancés)
+
+// Ajout d'un filtre pour augmenter les détails des logs liés à l'authentification et l'autorisation
+builder.Logging.AddFilter("Microsoft.AspNetCore.Authentication", LogLevel.Debug);
+builder.Logging.AddFilter("Microsoft.AspNetCore.Authorization", LogLevel.Debug);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -21,10 +32,10 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Findexium API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme.",
+        Description = "Enter 'Bearer' followed by your token in the text input below..",
         Name = "Authorization",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
         Scheme = "Bearer"
     });
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -38,7 +49,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
@@ -60,7 +71,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
-    //options.SignIn.RequireConfirmedEmail = true;
+    options.User.RequireUniqueEmail = true;
 
 });
 
@@ -100,6 +111,30 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(roleName))
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var userRepository = scope.ServiceProvider.GetRequiredService<UserRepository>();
+
+    var adminUser = await userManager.FindByEmailAsync("adminuserone@findexium.com");
+    if (adminUser == null)
+    {
+        adminUser = new IdentityUser { UserName = "AdminUserOne", Email = "adminuserone@findexium.com" };
+        var result = await userManager.CreateAsync(adminUser, "AdminUserOnePassword123!");
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+            var appUser = new User
+            {
+                UserName = adminUser.UserName,
+                FullName = "Admin User Full Name", 
+                Role = "Admin"
+            };
+            await userRepository.AddAsync(appUser);
         }
     }
 }
