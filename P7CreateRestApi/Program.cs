@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using P7CreateRestApi.Domain;
-
+using Microsoft.AspNetCore.HttpLogging;
+using P7CreateRestApi;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -21,6 +22,19 @@ builder.Logging.AddEventSourceLogger();
 
 builder.Logging.AddFilter("Microsoft.AspNetCore.Authentication", LogLevel.Debug);
 builder.Logging.AddFilter("Microsoft.AspNetCore.Authorization", LogLevel.Debug);
+
+// Add HTTP logging configuration
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All;
+    logging.RequestHeaders.Add("sec-ch-ua");
+    logging.ResponseHeaders.Add("MyResponseHeader");
+    logging.MediaTypeOptions.AddText("application/javascript");
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
+
+builder.Services.AddControllers();
 
 
 builder.Services.AddControllers();
@@ -146,6 +160,11 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+
+// Enable HTTP logging
+app.UseHttpLogging();
+app.UseHttpsRedirection();
+app.UseLoggingMiddleware();
 
 // Enable authentication and authorization middleware
 app.UseAuthentication();
