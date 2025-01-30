@@ -2,10 +2,12 @@ using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace P7CreateRestApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RatingController : ControllerBase
@@ -18,6 +20,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<IEnumerable<Rating>>> GetAllAsync()
         {
             var ratings = await _repository.GetAllAsync();
@@ -25,6 +28,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<Rating>> GetByIdAsync(int id)
         {
             var rating = await _repository.GetByIdAsync(id);
@@ -36,6 +40,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Rating>> CreateAsync([FromBody] Rating rating)
         {
             if (!ModelState.IsValid)
@@ -48,6 +53,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateAsync(int id, RatingDto ratingDto)
         {
             if (id != ratingDto.Id)
@@ -81,6 +87,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             try

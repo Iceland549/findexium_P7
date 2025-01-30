@@ -2,9 +2,11 @@ using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace P7CreateRestApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CurvePointController : ControllerBase
@@ -17,6 +19,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<IEnumerable<CurvePoint>>> GetAllAsync()
         {
             var curvePoints = await _repository.GetAllAsync();
@@ -24,6 +27,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<CurvePoint>> GetByIdAsync(int id)
         {
             var curvePoint = await _repository.GetByIdAsync(id);
@@ -35,6 +39,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<CurvePoint>> CreateAsync([FromBody] CurvePoint curvePoint)
         {
             if (!ModelState.IsValid)
@@ -47,6 +52,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateAsync(int id, CurvePointDto curvePointDto)
         {
             if (id != curvePointDto.Id)
@@ -79,6 +85,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             try

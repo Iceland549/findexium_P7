@@ -4,10 +4,12 @@ using P7CreateRestApi.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using P7CreateRestApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace P7CreateRestApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TradeController : ControllerBase
@@ -20,6 +22,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<IEnumerable<Trade>>> GetAllAsync()
         {
             var trades = await _repository.GetAllAsync();
@@ -27,6 +30,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<Trade>> GetByIdAsync(int id)
         {
             var trade = await _repository.GetByIdAsync(id);
@@ -38,6 +42,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Trade>> CreateAsync([FromBody] Trade trade)
         {
             if (!ModelState.IsValid)
@@ -50,6 +55,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAsync(int id, [FromBody] TradeDto tradeDto)
         {
             if (id != tradeDto.TradeId)
@@ -95,6 +101,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             try

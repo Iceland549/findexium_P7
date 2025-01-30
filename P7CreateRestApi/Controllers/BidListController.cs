@@ -2,10 +2,12 @@ using P7CreateRestApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace P7CreateRestApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BidListController : ControllerBase
@@ -17,6 +19,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User, Admin")]
         public async Task<ActionResult<IEnumerable<BidList>>> GetAllAsync()
         {
             // TODO: check data valid and save to db, after saving return bid list
@@ -25,6 +28,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "User, Admin")]
         public async Task<ActionResult<BidList>> GetByIdAsync(int id)
         {
             var bidList = await _repository.GetByIdAsync(id);
@@ -36,6 +40,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<BidList>> CreateAsync([FromBody]BidList bidList) 
         {
             if (!ModelState.IsValid)
@@ -49,6 +54,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateAsync(int id, BidListDto bidListDto)
         {
             if (id != bidListDto.BidListId)
@@ -94,6 +100,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             try
