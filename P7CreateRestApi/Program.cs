@@ -12,21 +12,22 @@ using P7CreateRestApi.Domain;
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
-// Add services to the container.
+// Configure logging
+builder.Logging.ClearProviders(); 
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging")); 
+builder.Logging.AddConsole();
+builder.Logging.AddDebug(); 
+builder.Logging.AddEventSourceLogger(); 
 
-builder.Logging.ClearProviders(); // Supprime les providers par défaut pour éviter les doublons
-builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging")); // Charge la configuration depuis appsettings.json
-builder.Logging.AddConsole(); // Ajoute un provider pour afficher les logs dans la console
-builder.Logging.AddDebug(); // Ajoute un provider pour le débogage
-builder.Logging.AddEventSourceLogger(); // Ajoute un provider pour EventSource (utile pour les diagnostics avancés)
-
-// Ajout d'un filtre pour augmenter les détails des logs liés à l'authentification et l'autorisation
 builder.Logging.AddFilter("Microsoft.AspNetCore.Authentication", LogLevel.Debug);
 builder.Logging.AddFilter("Microsoft.AspNetCore.Authorization", LogLevel.Debug);
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+// Configure Swagger with JWT support
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Findexium API", Version = "v1" });
@@ -54,12 +55,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Configure database contexts for application and identity
 builder.Services.AddDbContext<LocalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
 
+
+// Configure Identity 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -75,6 +79,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 });
 
+// Configure JWT authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -93,6 +98,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Repositories injection container
 builder.Services.AddScoped<BidListRepository>();
 builder.Services.AddScoped<CurvePointRepository>();
 builder.Services.AddScoped<RatingRepository>();
@@ -102,6 +108,7 @@ builder.Services.AddScoped<UserRepository>();
 
 var app = builder.Build();
 
+// Create default roles at application startup
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -115,6 +122,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Create default admin user at application startup
 using (var scope = app.Services.CreateScope())
 {
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
@@ -139,6 +147,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Enable authentication and authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -151,6 +160,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Configure default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
