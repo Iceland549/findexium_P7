@@ -11,7 +11,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 
 namespace P7CreateRestApi.Controllers
 {
@@ -24,38 +23,31 @@ namespace P7CreateRestApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly UserRepository _userRepository;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ILogger<LoginController> _logger;
 
         public LoginController(UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             IConfiguration configuration, UserRepository userRepository,
-            RoleManager<IdentityRole> roleManager,
-            ILogger<LoginController> logger)
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _userRepository = userRepository;
             _roleManager = roleManager;
-            _logger = logger;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModelDto model)
         {
-            _logger.LogInformation("Registration attempt for user: {UserName}", model.UserName);
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for registration attempt: {Errors}",
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
                 return BadRequest(ModelState);
             }
 
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
             if (existingUser != null)
             {
-                _logger.LogWarning("Registration attempt with existing email: {Email}", model.Email);
                 return BadRequest(new { Message = "Cet email est déjà utilisé." });
             }
 
@@ -72,7 +64,6 @@ namespace P7CreateRestApi.Controllers
                 var role = "User";
                 if (!await _roleManager.RoleExistsAsync(role))
                 {
-                    _logger.LogInformation("Creating new role: {Role}", role);
                     await _roleManager.CreateAsync(new IdentityRole(role));
                 }
 
@@ -86,17 +77,14 @@ namespace P7CreateRestApi.Controllers
                 };
                 await _userRepository.AddAsync(appUser);
 
-                _logger.LogInformation("User registered successfully: {UserName} with role: {Role}", model.UserName, role);
                 return Ok(new { Message = $"Utilisateur enregistré avec succès avec le rôle : {role}" });
             }
 
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
-                _logger.LogWarning("User registration error: {Error}", error.Description);
             }
 
-            _logger.LogError("User registration failed for: {UserName}", model.UserName);
             return BadRequest(ModelState);
         }
 
@@ -105,16 +93,13 @@ namespace P7CreateRestApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModelDto model)
         {
-            _logger.LogInformation("Login attempt for user: {UserName}", model.UserName);
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for login attempt");
                 return BadRequest(ModelState);
             }
             if (string.IsNullOrEmpty(model.UserName))
             {
-                _logger.LogWarning("Login attempt with empty username");
                 return BadRequest("Le nom d'utilisateur ne peut être vide.");
             }
             var user = await _userManager.FindByNameAsync(model.UserName);
@@ -123,18 +108,15 @@ namespace P7CreateRestApi.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 var role = roles.FirstOrDefault() ?? "User";
                 var token = GenerateJwtToken(user, role);
-                _logger.LogInformation("User {UserName} logged in successfully", model.UserName);
                 return Ok(new { Token = token });
             }
 
-            _logger.LogWarning("Failed login attempt for user: {UserName}", model.UserName);
             return Unauthorized();
         }
 
 
         private string GenerateJwtToken(IdentityUser User, string role)
         {
-            _logger.LogInformation("Generating JWT for user {UserName} with role {Role}", User.UserName, role);
 
             var claims = new List<Claim>
             {

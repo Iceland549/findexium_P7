@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using P7CreateRestApi.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 
 namespace P7CreateRestApi.Controllers
 {
@@ -15,29 +14,24 @@ namespace P7CreateRestApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserRepository _repository;
-        private readonly ILogger<UserController> _logger;
 
-        public UserController(UserRepository repository, ILogger<UserController> logger)
+        public UserController(UserRepository repository)
         {
             _repository = repository;
-            _logger = logger;
         }
 
         [HttpGet]
         [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<IEnumerable<User>>> GetAllAsync()
         {
-            _logger.LogInformation("GET /api/User called at {time}", DateTime.UtcNow); // Log d'information
 
             try
             {
                 var users = await _repository.GetAllAsync();
-                _logger.LogInformation("Successfully retrieved users at {time}", DateTime.UtcNow); // Log après récupération des données
                 return Ok(users);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "An error occurred while retrieving users at {time}", DateTime.UtcNow); // Log en cas d'erreur
                 return StatusCode(500, "Internal server error");
             }
         }
