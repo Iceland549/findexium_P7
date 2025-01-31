@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace P7CreateRestApi.Migrations
+namespace P7CreateRestApi.Migrations.FindexiumMigrations
 {
     public partial class InitialCreate : Migration
     {
@@ -18,6 +18,8 @@ namespace P7CreateRestApi.Migrations
                     Account = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BidType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BidQuantity = table.Column<double>(type: "float", nullable: true),
+                    AskQuantity = table.Column<double>(type: "float", nullable: true),
+                    Bid = table.Column<double>(type: "float", nullable: true),
                     Ask = table.Column<double>(type: "float", nullable: true),
                     Benchmark = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BidListDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -63,9 +65,9 @@ namespace P7CreateRestApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    MoodyRating = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SandPRating = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FitchRating = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MoodyRating = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SandPRating = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FitchRating = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OrderNumber = table.Column<byte>(type: "tinyint", nullable: true)
                 },
                 constraints: table =>
@@ -79,12 +81,12 @@ namespace P7CreateRestApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Json = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Template = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SqlStr = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SqlPart = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Json = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Template = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SqlStr = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SqlPart = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -97,46 +99,30 @@ namespace P7CreateRestApi.Migrations
                 {
                     TradeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Account = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AccountType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Account = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AccountType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BuyQuantity = table.Column<double>(type: "float", nullable: true),
                     SellQuantity = table.Column<double>(type: "float", nullable: true),
                     BuyPrice = table.Column<double>(type: "float", nullable: true),
                     SellPrice = table.Column<double>(type: "float", nullable: true),
                     TradeDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TradeSecurity = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TradeStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Trader = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Benchmark = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Book = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TradeSecurity = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TradeStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Trader = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Benchmark = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Book = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreationName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RevisionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RevisionName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RevisionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DealName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DealType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SourceListId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Side = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    DealName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DealType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SourceListId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Side = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Trades", x => x.TradeId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
         }
 
@@ -156,9 +142,6 @@ namespace P7CreateRestApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Trades");
-
-            migrationBuilder.DropTable(
-                name: "Users");
         }
     }
 }
