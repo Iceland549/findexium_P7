@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using P7CreateRestApi.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using P7CreateRestApi.Data;
 
 namespace P7CreateRestApi.Controllers
 {
@@ -14,15 +16,16 @@ namespace P7CreateRestApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserRepository _repository;
-
-        public UserController(UserRepository repository)
+        private readonly UserManager<User> _userManager;
+        public UserController(UserRepository repository, UserManager<User> userManager)
         {
             _repository = repository;
+            _userManager = userManager;
         }
 
         [HttpGet]
         [Authorize(Roles = "User,Admin")]
-        public async Task<ActionResult<IEnumerable<User>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<IdentityUser>>> GetAllAsync()
         {
 
             try
@@ -38,7 +41,7 @@ namespace P7CreateRestApi.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "User,Admin")]
-        public async Task<ActionResult<User>> GetByIdAsync(int id)
+        public async Task<ActionResult<IdentityUser>> GetByIdAsync(string id)
         {
             var user = await _repository.GetByIdAsync(id);
             if (user == null)
@@ -48,55 +51,34 @@ namespace P7CreateRestApi.Controllers
             return user;
         }
 
-        //[HttpPost]
-        //public async Task<ActionResult<User>> CreateAsync([FromBody] User user)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    await _repository.AddAsync(user);
-        //    return CreatedAtAction(nameof(GetByIdAsync), new { id = user.Id }, user);
-        //}
-
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] UserDto userDto)
+        public async Task<ActionResult> UpdateAsync(string id, [FromBody] UserDto userDto)
         {
-            if (id != userDto.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                var originalUser = await _repository.GetByIdAsync(id);
-                if (originalUser == null)
-                {
-                    return NotFound();
-                }
-                originalUser.UserName = userDto.Username;
-                originalUser.FullName = userDto.Fullname;
-                originalUser.Role = userDto.Role;
-
-                await _repository.UpdateAsync(originalUser);
-            }
-            catch (KeyNotFoundException)
+            var originalUser = await _userManager.FindByIdAsync(id);
+            if (originalUser == null)
             {
                 return NotFound();
             }
+
+            originalUser.UserName = userDto.UserName;
+            originalUser.FullName = userDto.FullName;
+            originalUser.Role = userDto.Role;
+
+            var result = await _userManager.UpdateAsync(originalUser);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
             return NoContent();
         }
 
+
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteAsync(int id)
+        public async Task<IActionResult> DeleteAsync(string id)
         {
             try
             {

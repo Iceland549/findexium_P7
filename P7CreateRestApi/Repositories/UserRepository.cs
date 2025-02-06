@@ -3,16 +3,19 @@ using P7CreateRestApi.Domain;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace P7CreateRestApi.Repositories
 {
     public class UserRepository
     {
-        private readonly LocalDbContext _context;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public UserRepository(LocalDbContext context)
+        public UserRepository(ApplicationDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
@@ -20,15 +23,14 @@ namespace P7CreateRestApi.Repositories
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<User?> GetByIdAsync(string id)
         {
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task AddAsync(User user)
+        public async Task<IdentityResult> AddAsync(User user, string password)
         {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            return await _userManager.CreateAsync(user, password);
         }
 
         public async Task UpdateAsync(User user)
@@ -42,7 +44,7 @@ namespace P7CreateRestApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(string id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)

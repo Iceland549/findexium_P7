@@ -18,21 +18,19 @@ namespace P7CreateRestApi.Controllers
     [Route("[controller]")]
     public class LoginController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
-        private readonly UserRepository _userRepository;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public LoginController(UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            IConfiguration configuration, UserRepository userRepository,
+        public LoginController(UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IConfiguration configuration,
             RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
-            _userRepository = userRepository;
             _roleManager = roleManager;
         }
 
@@ -51,13 +49,13 @@ namespace P7CreateRestApi.Controllers
                 return BadRequest(new { Message = "Cet email est déjà utilisé." });
             }
 
-            var identityUser = new IdentityUser
+            var User = new User
             {
                 UserName = model.UserName,
                 Email = model.Email
             };
 
-            var result = await _userManager.CreateAsync(identityUser, model.Password);
+            var result = await _userManager.CreateAsync(User, model.Password);
 
             if (result.Succeeded)
             {
@@ -67,15 +65,7 @@ namespace P7CreateRestApi.Controllers
                     await _roleManager.CreateAsync(new IdentityRole(role));
                 }
 
-                await _userManager.AddToRoleAsync(identityUser, role);
-
-                var appUser = new User
-                {
-                    UserName = model.UserName,
-                    FullName = model.FullName,
-                    Role = role
-                };
-                await _userRepository.AddAsync(appUser);
+                await _userManager.AddToRoleAsync(User, role);
 
                 return Ok(new { Message = $"Utilisateur enregistré avec succès avec le rôle : {role}" });
             }
@@ -106,9 +96,13 @@ namespace P7CreateRestApi.Controllers
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                var role = roles.FirstOrDefault() ?? "User";
-                var token = GenerateJwtToken(user, role);
-                return Ok(new { Token = token });
+                if (roles != null)
+                {
+                    var role = roles.ToList().Contains("Admin") ? "Admin" : "User";
+                    var token = GenerateJwtToken(user, role);
+                    return Ok(new { Token = token });
+                }
+
             }
 
             return Unauthorized();

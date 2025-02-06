@@ -78,7 +78,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 // Configure Identity 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -113,7 +113,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Repositories injection container
-builder.Services.AddScoped<BidListRepository>();
+builder.Services.AddScoped<IBidListRepository, BidListRepository>();
 builder.Services.AddScoped<CurvePointRepository>();
 builder.Services.AddScoped<RatingRepository>();
 builder.Services.AddScoped<RuleNameRepository>();
@@ -136,30 +136,38 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+var adminPassword = builder.Configuration["AdminSettings:Password"];
+
 // Create default admin user at application startup
 using (var scope = app.Services.CreateScope())
 {
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    var userRepository = scope.ServiceProvider.GetRequiredService<UserRepository>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
     var adminUser = await userManager.FindByEmailAsync("adminuserone@findexium.com");
     if (adminUser == null)
     {
-        adminUser = new IdentityUser { UserName = "AdminUserOne", Email = "adminuserone@findexium.com" };
-        var result = await userManager.CreateAsync(adminUser, "AdminUserOnePassword123!");
+        adminUser = new User
+        {
+            UserName = "AdminUserOne",
+            Email = "adminuserone@findexium.com"
+        };
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
-            var appUser = new User
-            {
-                UserName = adminUser.UserName,
-                FullName = "Admin User Full Name", 
-                Role = "Admin"
-            };
-            await userRepository.AddAsync(appUser);
+            Console.WriteLine("Admin user created successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to create admin user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
         }
     }
+    else
+    {
+        Console.WriteLine("Admin user already exists.");
+    }
 }
+
 
 // Enable HTTP logging
 app.UseHttpLogging();
