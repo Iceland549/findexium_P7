@@ -93,6 +93,8 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 });
 
+var jwtKey = builder.Configuration["Jwt:Key"];
+
 // Configure JWT authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -108,7 +110,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
