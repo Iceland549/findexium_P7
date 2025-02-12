@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using P7CreateRestApi.Models;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using P7CreateRestApi.Dtos;
@@ -108,6 +107,7 @@ namespace P7CreateRestApi.Controllers
             return Unauthorized();
         }
 
+        
 
         private string GenerateJwtToken(IdentityUser User, string role)
         {
@@ -120,8 +120,8 @@ namespace P7CreateRestApi.Controllers
                 new(ClaimTypes.Role, role) // Rôle utilisateur pour gérer les autorisations
             };
 
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var jwtKey = _configuration["Jwt:Key"];
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expires = DateTime.UtcNow.AddMinutes(60); 
 
