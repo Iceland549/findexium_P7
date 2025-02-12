@@ -1,19 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using P7CreateRestApi.Controllers;
 using P7CreateRestApi.Dtos;
 using P7CreateRestApi.Domain;
-using System.Threading.Tasks;
-using Xunit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
 
 
@@ -30,7 +25,8 @@ namespace P7CreateRestApi.Tests.Services
         public LoginControllerTest()
         {
             // Créer les mocks pour les dépendances
-            _mockUserManager = new Mock<UserManager<User>>(
+            _mockUserManager = new Mock<UserManager<User>>
+                (
                 Mock.Of<IUserStore<User>>(),
                 Mock.Of<IOptions<IdentityOptions>>(),
                 Mock.Of<IPasswordHasher<User>>(),
@@ -39,24 +35,27 @@ namespace P7CreateRestApi.Tests.Services
                 Mock.Of<ILookupNormalizer>(),
                 Mock.Of<IdentityErrorDescriber>(),
                 Mock.Of<IServiceProvider>(),
-                Mock.Of<ILogger<UserManager<User>>>());
+                Mock.Of<ILogger<UserManager<User>>>()
+                );
 
-            _mockSignInManager = new Mock<SignInManager<User>>(
+            _mockSignInManager = new Mock<SignInManager<User>>
+                (
                 _mockUserManager.Object,
                 Mock.Of<IHttpContextAccessor>(),
                 Mock.Of<IUserClaimsPrincipalFactory<User>>(),
                 Mock.Of<IOptions<IdentityOptions>>(),
                 Mock.Of<ILogger<SignInManager<User>>>(),
                 Mock.Of<IAuthenticationSchemeProvider>(),
-                Mock.Of<IUserConfirmation<User>>());
+                Mock.Of<IUserConfirmation<User>>()
+                );
 
             _mockRoleManager = new Mock<RoleManager<IdentityRole>>(
                 Mock.Of<IRoleStore<IdentityRole>>(),
                 new List<IRoleValidator<IdentityRole>>(),
                 Mock.Of<ILookupNormalizer>(),
                 Mock.Of<IdentityErrorDescriber>(),
-                Mock.Of<ILogger<RoleManager<IdentityRole>>>());
-
+                Mock.Of<ILogger<RoleManager<IdentityRole>>>()
+                );
 
             // Configurer la configuration en mémoire
             var initialData = new Dictionary<string, string?>
@@ -92,54 +91,63 @@ namespace P7CreateRestApi.Tests.Services
             // Configurer le mock UserManager pour simuler la création réussie de l'utilisateur
             _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
+
             _mockUserManager.Setup(x => x.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
 
-            // Act
-            var result = await _controller.Register(registerDto);
+            _mockRoleManager.Setup(x => x.RoleExistsAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+
+            // Act 
+            var result = await _controller.Register(registerDto); ;
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
 
             // Convertir la réponse en JSON puis en Dictionary
             var json = JsonSerializer.Serialize(okResult.Value);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(json);    
 
             // Vérifier le message
             Assert.NotNull(response);
             Assert.True(response.ContainsKey("Message"));
             Assert.Equal("Utilisateur enregistré avec succès avec le rôle : User", response["Message"].ToString());
-
         }
 
         [Fact]
         public async Task Login_ValidCredentials_ReturnsOkWithToken()
         {
             // Arrange
-            var loginDto = new LoginModelDto()
+            var loginDto = new LoginModelDto
             {
                 UserName = "testuser",
                 Password = "Test@123"
             };
 
-            var testUser = new User { UserName = "testuser", Id = "testuserid" };
+            var testUser = new User
+            {
+                UserName = "testuser",
+                Id = "tesuserid"
+            };
 
             // Mocking UserManager
             _mockUserManager.Setup(x => x.FindByNameAsync(It.IsAny<string>()))
                 .ReturnsAsync(testUser);
+
             _mockUserManager.Setup(x => x.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
+
             _mockUserManager.Setup(x => x.GetRolesAsync(It.IsAny<User>()))
                 .ReturnsAsync(["User"]);
 
-            // Act
+            // Act 
             var result = await _controller.Login(loginDto);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var okresult = Assert.IsType<OkObjectResult>(result);
 
             // Convertir la réponse en JSON puis en Dictionary
-            var json = JsonSerializer.Serialize(okResult.Value);
+            var json = JsonSerializer.Serialize(okresult.Value);
             var response = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
             // Vérifier le token
@@ -148,12 +156,12 @@ namespace P7CreateRestApi.Tests.Services
             Assert.False(string.IsNullOrEmpty(response["Token"].ToString()));
         }
 
-
         [Fact]
         public async Task Logout_ReturnsOk()
         {
             // Arrange
-            _mockSignInManager.Setup(x => x.SignOutAsync()).Returns(Task.CompletedTask);
+            _mockSignInManager.Setup(x => x.SignOutAsync())
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _controller.Logout();
@@ -170,7 +178,6 @@ namespace P7CreateRestApi.Tests.Services
             Assert.True(response.ContainsKey("Message"));
             Assert.Equal("Logout successful", response["Message"].ToString());
         }
-
     }
 }
 
