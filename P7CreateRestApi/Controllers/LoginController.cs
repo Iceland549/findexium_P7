@@ -22,7 +22,9 @@ namespace P7CreateRestApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public LoginController(UserManager<User> userManager,
+        public LoginController(
+
+            UserManager<User> userManager,
             SignInManager<User> signInManager,
             IConfiguration configuration,
             RoleManager<IdentityRole> roleManager)
