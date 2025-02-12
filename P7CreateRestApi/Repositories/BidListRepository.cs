@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace P7CreateRestApi.Repositories
 {
-    public class BidListRepository
+    public class BidListRepository : IBidListRepository
     {
         private readonly LocalDbContext _context;
 
@@ -30,21 +30,13 @@ namespace P7CreateRestApi.Repositories
         }
         public async Task UpdateAsync(BidList bidList)
         {
-            var existingBidList = await _context.BidLists.FindAsync(bidList.BidListId);
-            if (existingBidList == null)
-            {
-                throw new KeyNotFoundException("Bidlist not found");
-            }
+            var existingBidList = await _context.BidLists.FindAsync(bidList.BidListId) ?? throw new KeyNotFoundException("Bidlist not found");
             _context.Entry(existingBidList).CurrentValues.SetValues(bidList);
             await _context.SaveChangesAsync();
         }
         public async Task DeleteAsync(int id)
         {
-            var bidList = await _context.BidLists.FindAsync(id);
-            if (bidList == null)
-            {
-                throw new KeyNotFoundException("BidList not found");
-            }
+            var bidList = await _context.BidLists.FindAsync(id) ?? throw new KeyNotFoundException("BidList not found");
             _context.BidLists.Remove(bidList);
             await _context.SaveChangesAsync();
         }

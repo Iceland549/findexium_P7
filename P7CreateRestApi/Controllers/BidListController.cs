@@ -12,8 +12,8 @@ namespace P7CreateRestApi.Controllers
     [ApiController]
     public class BidListController : ControllerBase
     {
-        private readonly BidListRepository _repository;
-        public BidListController(BidListRepository repository)
+        private readonly IBidListRepository _repository;
+        public BidListController(IBidListRepository repository)
         {
             _repository = repository; 
         }
