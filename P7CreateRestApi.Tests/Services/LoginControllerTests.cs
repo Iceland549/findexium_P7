@@ -95,9 +95,6 @@ namespace P7CreateRestApi.Tests.Services
             _mockUserManager.Setup(x => x.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
 
-            _mockRoleManager.Setup(x => x.RoleExistsAsync(It.IsAny<string>()))
-                .ReturnsAsync(true);
-
             // Act 
             var result = await _controller.Register(registerDto); ;
 
