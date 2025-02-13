@@ -106,7 +106,7 @@ namespace P7CreateRestApi.Tests.Services
 
             // Convertir la réponse en JSON puis en Dictionary
             var json = JsonSerializer.Serialize(okResult.Value);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(json);    
+            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
             // Vérifier le message
             Assert.NotNull(response);
@@ -180,7 +180,4 @@ namespace P7CreateRestApi.Tests.Services
         }
     }
 }
-
-
-
 

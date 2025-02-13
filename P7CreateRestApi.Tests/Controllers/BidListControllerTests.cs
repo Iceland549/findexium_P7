@@ -4,10 +4,6 @@ using P7CreateRestApi.Controllers;
 using P7CreateRestApi.Domain;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace P7CreateRestApi.Tests.Controllers
 {
