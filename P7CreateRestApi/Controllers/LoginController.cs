@@ -113,15 +113,13 @@ namespace P7CreateRestApi.Controllers
 
         private string GenerateJwtToken(IdentityUser User, string role)
         {
-
             var claims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Sub, User.UserName), // Identifie l'utilisateur par son nom d'utilisateur
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Identifiant unique du token
-                new(ClaimTypes.NameIdentifier, User.Id), // Identifie l'utilisateur par son ID unique
-                new(ClaimTypes.Role, role) // Rôle utilisateur pour gérer les autorisations
+                new(JwtRegisteredClaimNames.Sub, User.UserName), 
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+                new(ClaimTypes.NameIdentifier, User.Id), 
+                new(ClaimTypes.Role, role) 
             };
-
             var jwtKey = _configuration["Jwt:Key"];
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
