@@ -22,12 +22,10 @@ namespace P7CreateRestApi.Controllers
             _repository = repository;
             _userManager = userManager;
         }
-
         [HttpGet]
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<IdentityUser>>> GetAllAsync()
         {
-
             try
             {
                 var users = await _repository.GetAllAsync();
@@ -40,7 +38,7 @@ namespace P7CreateRestApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IdentityUser>> GetByIdAsync(string id)
         {
             var user = await _repository.GetByIdAsync(id);
